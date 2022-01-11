@@ -10,6 +10,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/smartcontractkit/chainlink/core/services/blockhashstore"
 	"github.com/smartcontractkit/chainlink/core/services/relay"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -242,6 +243,10 @@ func NewApplication(opts ApplicationOpts) (Application, error) {
 			job.Cron: cron.NewDelegate(
 				pipelineRunner,
 				globalLogger),
+			job.BlockhashStore: blockhashstore.NewDelegate(
+				globalLogger,
+				chainSet,
+				keyStore.Eth()),
 		}
 		webhookJobRunner = delegates[job.Webhook].(*webhook.Delegate).WebhookJobRunner()
 	)

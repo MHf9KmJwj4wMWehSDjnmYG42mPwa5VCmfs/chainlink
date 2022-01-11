@@ -79,6 +79,14 @@ func (r *SpecResolver) ToWebhookSpec() (*WebhookSpecResolver, bool) {
 	return &WebhookSpecResolver{spec: *r.j.WebhookSpec}, true
 }
 
+func (r *SpecResolver) ToBlockhashStoreSpec() (*BlockhashStoreSpecResolver, bool) {
+	if r.j.Type != job.BlockhashStore {
+		return nil, false
+	}
+
+	return &BlockhashStoreSpecResolver{spec: *r.j.BlockhashStoreSpec}, true
+}
+
 type CronSpecResolver struct {
 	spec job.CronSpec
 }
@@ -653,4 +661,52 @@ type WebhookSpecResolver struct {
 // CreatedAt resolves the spec's created at timestamp.
 func (r *WebhookSpecResolver) CreatedAt() graphql.Time {
 	return graphql.Time{Time: r.spec.CreatedAt}
+}
+
+type BlockhashStoreSpecResolver struct {
+	spec job.BlockhashStoreSpec
+}
+
+func (b *BlockhashStoreSpecResolver) CoordinatorV1Address() *string {
+	if b.spec.CoordinatorV1Address == nil {
+		return nil
+	}
+	addr := b.spec.CoordinatorV1Address.String()
+	return &addr
+}
+
+func (b *BlockhashStoreSpecResolver) CoordinatorV2Address() *string {
+	if b.spec.CoordinatorV2Address == nil {
+		return nil
+	}
+	addr := b.spec.CoordinatorV2Address.String()
+	return &addr
+}
+
+func (b *BlockhashStoreSpecResolver) WaitBlocks() int32 {
+	return b.spec.WaitBlocks
+}
+
+func (b *BlockhashStoreSpecResolver) LookbackBlocks() int32 {
+	return b.spec.LookbackBlocks
+}
+
+func (b *BlockhashStoreSpecResolver) BlockhashStoreAddress() string {
+	return b.spec.BlockhashStoreAddress.String()
+}
+
+func (b *BlockhashStoreSpecResolver) PollPeriod() string {
+	return b.spec.PollPeriod.String()
+}
+
+func (b *BlockhashStoreSpecResolver) EVMChainID() string {
+	return b.spec.EVMChainID.String()
+}
+
+func (b *BlockhashStoreSpecResolver) FromAddress() *string {
+	if b.spec.FromAddress == nil {
+		return nil
+	}
+	addr := b.spec.FromAddress.String()
+	return &addr
 }

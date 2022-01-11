@@ -7,6 +7,7 @@ import (
 
 	uuid "github.com/satori/go.uuid"
 
+	"github.com/smartcontractkit/chainlink/core/internal/cltest"
 	"github.com/smartcontractkit/chainlink/core/services/webhook"
 )
 
@@ -451,4 +452,86 @@ ds -> ds_parse -> ds_multiply;
 	ws.WebhookSpecParams = params
 
 	return ws
+}
+
+// BlockhashStoreSpecParams defines params for building a blockhash store job spec.
+type BlockhashStoreSpecParams struct {
+	JobID                 string
+	Name                  string
+	CoordinatorV1Address  string
+	CoordinatorV2Address  string
+	WaitBlocks            int
+	LookbackBlocks        int
+	BlockhashStoreAddress string
+	PollPeriod            time.Duration
+	EVMChainID            int64
+	FromAdress            string
+}
+
+// BlockhashStoreSpec defines a blockhash store job spec.
+type BlockhashStoreSpec struct {
+	BlockhashStoreSpecParams
+	toml string
+}
+
+func (bhs BlockhashStoreSpec) Toml() string {
+	return bhs.toml
+}
+
+func GenerateBlockhashStoreSpec(params BlockhashStoreSpecParams) BlockhashStoreSpec {
+	if params.JobID == "" {
+		params.JobID = "123e4567-e89b-12d3-a456-426655442222"
+	}
+
+	if params.Name == "" {
+		params.Name = "blockhash-store"
+	}
+
+	if params.CoordinatorV1Address == "" {
+		params.CoordinatorV1Address = cltest.NewAddress().String()
+	}
+
+	if params.CoordinatorV2Address == "" {
+		params.CoordinatorV2Address = cltest.NewAddress().String()
+	}
+
+	if params.WaitBlocks == 0 {
+		params.WaitBlocks = 100
+	}
+
+	if params.LookbackBlocks == 0 {
+		params.LookbackBlocks = 200
+	}
+
+	if params.BlockhashStoreAddress == "" {
+		params.BlockhashStoreAddress = cltest.NewAddress().String()
+	}
+
+	if params.PollPeriod == 0 {
+		params.PollPeriod = 30 * time.Second
+	}
+
+	if params.FromAdress == "" {
+		params.FromAdress = cltest.NewAddress().String()
+	}
+
+	template := `
+type = "blockhashstore"
+schemaVersion = 1
+name = "%s"
+coordinatorV1Address = "%s"
+coordinatorV2Address = "%s"
+waitBlocks = %d
+lookbackBlocks = %d
+blockhashStoreAddress = "%s"
+pollPeriod = "%s"
+evmChainID = "%d"
+fromAddress = "%s"
+`
+	toml := fmt.Sprintf(template, params.Name, params.CoordinatorV1Address,
+		params.CoordinatorV2Address, params.WaitBlocks, params.LookbackBlocks,
+		params.BlockhashStoreAddress, params.PollPeriod.String(), params.EVMChainID,
+		params.FromAdress)
+
+	return BlockhashStoreSpec{BlockhashStoreSpecParams: params, toml: toml}
 }
